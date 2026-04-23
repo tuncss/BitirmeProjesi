@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+
+# Data and models
+data/raw/
+data/processed/
+data/models/
+*.nii
+*.nii.gz
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+sdd_text.txt
+srs_text.txt
+extract_pdfs.py
