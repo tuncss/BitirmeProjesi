@@ -13,9 +13,12 @@ venv/
 env/
 
 # Data and models
-data/raw/
-data/processed/
-data/models/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/models/*
+!data/models/.gitkeep
 *.nii
 *.nii.gz
 
@@ -34,12 +37,18 @@ Thumbs.db
 .ipynb_checkpoints/
 
 # Logs
-logs/
+logs/*
+!logs/.gitkeep
 *.log
 
 # Temporary files
-tmp/
-temp/
+tmp/*
+!tmp/uploads/
+!tmp/uploads/.gitkeep
+!tmp/results/
+!tmp/results/.gitkeep
+temp/*
+!temp/.gitkeep
 sdd_text.txt
 srs_text.txt
 extract_pdfs.py
