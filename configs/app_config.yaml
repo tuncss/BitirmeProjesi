@@ -1,0 +1,38 @@
+# Uygulama Konfigurasyonu
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+
+upload:
+  max_file_size_mb: 500
+  allowed_extensions: [".nii", ".nii.gz", ".zip"]
+  upload_dir: "tmp/uploads"
+  results_dir: "tmp/results"
+  cleanup_after_hours: 24
+
+models:
+  available:
+    - name: "unet3d"
+      display_name: "3D U-Net"
+      description: "Temel encoder-decoder segmentasyon modeli"
+      weight_path: "data/models/unet3d_best.pth"
+    - name: "attention_unet3d"
+      display_name: "3D Attention U-Net"
+      description: "Dikkat mekanizmali gelistirilmis segmentasyon modeli"
+      weight_path: "data/models/attention_unet3d_best.pth"
+  default: "attention_unet3d"
+  input_shape: [4, 128, 128, 128]
+
+segmentation:
+  device: "cuda"
+  batch_size: 1
+  use_sliding_window: true
+  overlap: 0.5
+
+visualization:
+  color_map:
+    NCR: [255, 0, 0]
+    ED: [0, 255, 0]
+    ET: [0, 0, 255]
+  default_opacity: 0.5
