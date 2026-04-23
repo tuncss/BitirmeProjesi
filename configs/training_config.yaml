@@ -1,0 +1,68 @@
+# Egitim Konfigurasyonu
+data:
+  dataset: "BraTS2021"
+  data_dir: "data/raw/BraTS2021"
+  processed_dir: "data/processed"
+  input_shape: [128, 128, 128]
+  num_classes: 4  # Background, NCR, ED, ET
+  modalities: ["t1", "t1ce", "t2", "flair"]
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+
+preprocessing:
+  normalization: "zscore"
+  crop_to_brain: true
+  target_size: [128, 128, 128]
+
+augmentation:
+  enabled: true
+  random_flip: true
+  random_rotation:
+    enabled: true
+    max_angle: 15
+  elastic_deformation:
+    enabled: true
+    alpha: 100
+    sigma: 10
+
+training:
+  models: ["unet3d", "attention_unet3d"]
+  epochs: 300
+  batch_size: 2
+  learning_rate: 0.0001
+  optimizer: "AdamW"
+  weight_decay: 0.00001
+  scheduler:
+    type: "CosineAnnealingWarmRestarts"
+    T_0: 50
+    T_mult: 2
+  loss:
+    type: "DiceCELoss"
+    dice_weight: 1.0
+    ce_weight: 1.0
+  early_stopping:
+    patience: 50
+    min_delta: 0.001
+    monitor: "val_dice_mean"
+
+evaluation:
+  metrics: ["dice", "iou", "hausdorff95"]
+  regions:
+    WT: "Whole Tumor"
+    TC: "Tumor Core"
+    ET: "Enhancing Tumor"
+  target_dice:
+    WT: 0.88
+    TC: 0.82
+    ET: 0.78
+
+checkpointing:
+  save_dir: "data/models"
+  save_best_only: true
+  monitor: "val_dice_mean"
+
+logging:
+  tensorboard_dir: "logs/tensorboard"
+  log_interval: 10

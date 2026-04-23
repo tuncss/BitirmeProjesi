@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.pyc
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+
+# Data and models
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/models/*
+!data/models/.gitkeep
+*.nii
+*.nii.gz
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Temporary files
+tmp/*
+!tmp/uploads/
+!tmp/uploads/.gitkeep
+!tmp/results/
+!tmp/results/.gitkeep
+temp/*
+!temp/.gitkeep
+sdd_text.txt
+srs_text.txt
+extract_pdfs.py
