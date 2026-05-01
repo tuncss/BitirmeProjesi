@@ -49,6 +49,7 @@ training:
 
 evaluation:
   metrics: ["dice", "iou", "hausdorff95"]
+  compute_hd95_every: 10  # HD95 pahali oldugu icin training validation'da her 10 epoch'ta hesapla
   regions:
     WT: "Whole Tumor"
     TC: "Tumor Core"

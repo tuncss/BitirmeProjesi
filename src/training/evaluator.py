@@ -82,7 +82,11 @@ def hausdorff_distance_95(pred: np.ndarray, target: np.ndarray) -> float:
     return float(np.percentile(all_distances, 95))
 
 
-def compute_brats_metrics(pred_mask: np.ndarray, gt_mask: np.ndarray) -> dict[str, float]:
+def compute_brats_metrics(
+    pred_mask: np.ndarray,
+    gt_mask: np.ndarray,
+    include_hd95: bool = True,
+) -> dict[str, float]:
     """Compute BraTS WT/TC/ET Dice, IoU, and HD95 metrics.
 
     The masks are expected to use converted training labels:
@@ -105,11 +109,10 @@ def compute_brats_metrics(pred_mask: np.ndarray, gt_mask: np.ndarray) -> dict[st
 
         dice = _dice_from_counts(tp, fp, fn)
         iou = _iou_from_counts(tp, fp, fn)
-        hd95 = hausdorff_distance_95(pred_binary, gt_binary)
-
         metrics[f"{region_name}_dice"] = dice
         metrics[f"{region_name}_iou"] = iou
-        metrics[f"{region_name}_hd95"] = hd95
+        if include_hd95:
+            metrics[f"{region_name}_hd95"] = hausdorff_distance_95(pred_binary, gt_binary)
         dice_values.append(dice)
 
     metrics["mean_dice"] = float(np.mean(dice_values))
