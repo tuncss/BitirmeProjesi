@@ -82,6 +82,19 @@ def test_compute_brats_metrics_uses_converted_brats_regions() -> None:
     assert metrics["mean_dice"] == pytest.approx(((4 / 6) + 1.0 + 1.0) / 3)
 
 
+def test_compute_brats_metrics_can_skip_hd95() -> None:
+    gt = np.array([0, 1, 2, 3])
+    pred = gt.copy()
+
+    metrics = compute_brats_metrics(pred, gt, include_hd95=False)
+
+    assert metrics["WT_dice"] == 1.0
+    assert metrics["TC_iou"] == 1.0
+    assert "WT_hd95" not in metrics
+    assert "TC_hd95" not in metrics
+    assert "ET_hd95" not in metrics
+
+
 def test_hausdorff_distance_95_handles_empty_masks() -> None:
     pred = np.zeros((4, 4, 4), dtype=np.uint8)
     target = np.zeros((4, 4, 4), dtype=np.uint8)
