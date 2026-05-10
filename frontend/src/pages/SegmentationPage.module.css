@@ -1,0 +1,166 @@
+.container {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Stepper ───────────────────────────────────────────────────────────────── */
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.stepperItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stepperArrow {
+  color: #334155;
+  font-size: 1rem;
+}
+
+.stepperLabel {
+  font-size: 0.8rem;
+  color: #475569;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.stepActive {
+  color: #38bdf8;
+  background-color: #0c2a3f;
+  font-weight: 600;
+}
+
+.stepDone {
+  color: #86efac;
+}
+
+/* ── Step content ──────────────────────────────────────────────────────────── */
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hint {
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* ── Modality chips ────────────────────────────────────────────────────────── */
+
+.modalityGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.modalityChip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.modalityTag {
+  font-weight: 700;
+  color: #38bdf8;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.modalityFile {
+  color: #64748b;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Actions ───────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.backBtn {
+  background: none;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  border-radius: 8px;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.backBtn:hover:not(:disabled) {
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+.backBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.startBtn {
+  background-color: #0ea5e9;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+
+.startBtn:hover:not(:disabled) {
+  background-color: #0284c7;
+}
+
+.startBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Error ─────────────────────────────────────────────────────────────────── */
+
+.error {
+  font-size: 0.85rem;
+  color: #f87171;
+  background-color: #450a0a30;
+  border: 1px solid #7f1d1d50;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}

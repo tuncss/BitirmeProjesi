@@ -1,5 +1,9 @@
 version: "3.8"
 
+# Default profile runs CPU-only. Use `--profile gpu` to enable nvidia reservations:
+#   docker compose --profile gpu up -d
+# When the gpu profile is active, the *-gpu service overrides take effect.
+
 services:
   redis:
     image: redis:7-alpine
@@ -24,19 +28,12 @@ services:
       - upload_data:/app/tmp
     depends_on:
       - redis
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
   celery_worker:
     build:
       context: ..
       dockerfile: backend/Dockerfile
-    command: celery -A app.tasks.celery_app worker --loglevel=info
+    command: celery -A backend.app.tasks.celery_app worker --loglevel=info --concurrency=1
     environment:
       APP_ENV: production
       REDIS_URL: redis://redis:6379/0
@@ -47,6 +44,23 @@ services:
       - upload_data:/app/tmp
     depends_on:
       - redis
+
+  backend-gpu:
+    extends:
+      service: backend
+    profiles: ["gpu"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  celery_worker-gpu:
+    extends:
+      service: celery_worker
+    profiles: ["gpu"]
     deploy:
       resources:
         reservations:

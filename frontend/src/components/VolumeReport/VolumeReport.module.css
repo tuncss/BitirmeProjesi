@@ -1,0 +1,162 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+
+.heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+/* ── Summary cards ─────────────────────────────────────────────────────────── */
+
+.summaryCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .summaryCards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.summaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.summaryCardHighlight {
+  border-color: #0ea5e9;
+  background-color: #0c2136;
+}
+
+.cardLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #475569;
+}
+
+.cardValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.summaryCardHighlight .cardValue {
+  color: #38bdf8;
+}
+
+/* ── Table ─────────────────────────────────────────────────────────────────── */
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid #334155;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.55rem 0.75rem;
+  color: #94a3b8;
+  border-bottom: 1px solid #1e293b;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover td {
+  background-color: #0f172a;
+}
+
+.colorDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.numCell {
+  font-variant-numeric: tabular-nums;
+  color: #cbd5e1;
+  white-space: nowrap;
+}
+
+.descCell {
+  color: #64748b;
+  font-size: 0.78rem;
+  min-width: 160px;
+}
+
+/* ── Charts ────────────────────────────────────────────────────────────────── */
+
+.chartsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .chartsRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.chartTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Disclaimer ────────────────────────────────────────────────────────────── */
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: #475569;
+  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  border-left: 3px solid #334155;
+  margin: 0;
+}

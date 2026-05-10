@@ -1,0 +1,136 @@
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.newBtn {
+  display: inline-block;
+  padding: 0.5rem 1.1rem;
+  background: none;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.newBtn:hover {
+  border-color: #475569;
+  color: #e2e8f0;
+}
+
+/* ── Sections ──────────────────────────────────────────────────────────────── */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+/* ── Download ──────────────────────────────────────────────────────────────── */
+
+.downloadRow {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.downloadBtn {
+  display: inline-block;
+  padding: 0.65rem 1.5rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #38bdf8;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.downloadBtn:hover {
+  background-color: #0f2233;
+  border-color: #0ea5e9;
+}
+
+/* ── Loading / Error states ────────────────────────────────────────────────── */
+
+.centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 40vh;
+}
+
+.spinner {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #334155;
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #f87171;
+  background-color: #450a0a30;
+  border: 1px solid #7f1d1d50;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  margin: 0;
+}
+
+.retryLink {
+  color: #38bdf8;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.retryLink:hover {
+  text-decoration: underline;
+}

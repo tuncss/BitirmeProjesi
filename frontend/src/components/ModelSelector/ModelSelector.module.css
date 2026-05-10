@@ -1,0 +1,125 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 560px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Card ──────────────────────────────────────────────────────────────────── */
+
+.card {
+  all: unset;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem;
+  background-color: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.card:hover:not(.disabled) {
+  border-color: #38bdf8;
+  background-color: #0f2233;
+}
+
+.card.selected {
+  border-color: #0ea5e9;
+  background-color: #0c2136;
+}
+
+.card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cardLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.badgeRecommended {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  background-color: #14532d;
+  color: #86efac;
+  white-space: nowrap;
+}
+
+.badgeBaseline {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  background-color: #1e3a5f;
+  color: #7dd3fc;
+  white-space: nowrap;
+}
+
+/* ── Description ───────────────────────────────────────────────────────────── */
+
+.cardDesc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* ── Metrics ───────────────────────────────────────────────────────────────── */
+
+.metrics {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.metricLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.metricValue {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #38bdf8;
+}
