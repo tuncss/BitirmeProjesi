@@ -8,6 +8,8 @@ interface SegmentationViewerProps {
 }
 
 type ViewMode = 'multi' | 'axial' | 'coronal' | 'sagittal' | 'render'
+type ClassKey = 'ncr' | 'ed' | 'et'
+type ClassVisibility = Record<ClassKey, boolean>
 
 const VIEW_MODES: { key: ViewMode; label: string; sliceType: SLICE_TYPE }[] = [
   { key: 'multi',    label: 'Multi',    sliceType: SLICE_TYPE.MULTIPLANAR },
@@ -17,22 +19,23 @@ const VIEW_MODES: { key: ViewMode; label: string; sliceType: SLICE_TYPE }[] = [
   { key: 'render',   label: '3D',       sliceType: SLICE_TYPE.RENDER },
 ]
 
-// BraTS labels are {0=bg, 1=NCR, 2=ED, 4=ET}. Pre-build the discrete label
-// LUT so we can pass it via volume options at load time (avoids touching the
-// volume after the WebGL upload).
-const BRATS_LABEL_LUT = cmapper.makeLabelLut({
-  R: [0, 239, 34,  0,  59],
-  G: [0, 68,  197, 0,  130],
-  B: [0, 68,  94,  0,  246],
-  A: [0, 255, 255, 0,  255],
-  I: [0, 1,   2,   3,  4],
-  labels: ['Background', 'NCR/Necrosis', 'Edema (ED)', '', 'Enhancing Tumor (ET)'],
-})
+function buildBratsLut(visible: ClassVisibility) {
+  const alpha = (on: boolean) => (on ? 255 : 0)
 
-const LEGEND = [
-  { label: 'NCR/Nekroz', color: '#ef4444' },
-  { label: 'Ödem (ED)',  color: '#22c55e' },
-  { label: 'ET (Tümör)', color: '#3b82f6' },
+  return cmapper.makeLabelLut({
+    R: [0, 239, 34,  0,  59],
+    G: [0, 68,  197, 0,  130],
+    B: [0, 68,  94,  0,  246],
+    A: [0, alpha(visible.ncr), alpha(visible.ed), 0, alpha(visible.et)],
+    I: [0, 1,   2,   3,  4],
+    labels: ['Background', 'NCR/Necrosis', 'Edema (ED)', '', 'Enhancing Tumor (ET)'],
+  })
+}
+
+const LEGEND: { key: ClassKey; label: string; color: string }[] = [
+  { key: 'ncr', label: 'NCR/Nekroz', color: '#ef4444' },
+  { key: 'ed',  label: 'Ödem (ED)',  color: '#22c55e' },
+  { key: 'et',  label: 'ET (Tümör)', color: '#3b82f6' },
 ]
 
 async function fetchVolumeBuffer(url: string, label: string): Promise<ArrayBuffer> {
@@ -54,6 +57,11 @@ export default function SegmentationViewer({ backgroundUrl, overlayUrl }: Segmen
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const nvRef = useRef<Niivue | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('multi')
+  const [visibleClasses, setVisibleClasses] = useState<ClassVisibility>({
+    ncr: true,
+    ed: true,
+    et: true,
+  })
   const [opacity, setOpacity] = useState(0.7)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -114,7 +122,7 @@ export default function SegmentationViewer({ backgroundUrl, overlayUrl }: Segmen
         // NVImage.loadFromUrl drops the colormapLabel option (it isn't in
         // its destructured parameters), so attach it manually before the
         // volume is uploaded to the GPU.
-        overlay.colormapLabel = BRATS_LABEL_LUT
+        overlay.colormapLabel = buildBratsLut(visibleClasses)
         nv.addVolume(overlay)
 
         nv.setSliceType(SLICE_TYPE.MULTIPLANAR)
@@ -134,6 +142,17 @@ export default function SegmentationViewer({ backgroundUrl, overlayUrl }: Segmen
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backgroundUrl, overlayUrl])
+
+  useEffect(() => {
+    const nv = nvRef.current
+    const overlay = nv?.volumes[nv.volumes.length - 1]
+
+    if (!nv || !overlay) return
+
+    overlay.colormapLabel = buildBratsLut(visibleClasses)
+    nv.updateGLVolume()
+    nv.drawScene()
+  }, [visibleClasses])
 
   const handleViewMode = (mode: ViewMode, sliceType: SLICE_TYPE) => {
     setViewMode(mode)
@@ -194,12 +213,26 @@ export default function SegmentationViewer({ backgroundUrl, overlayUrl }: Segmen
 
       {/* Legend */}
       <div className={styles.legend}>
-        {LEGEND.map(({ label, color }) => (
-          <div key={label} className={styles.legendItem}>
-            <span className={styles.legendDot} style={{ backgroundColor: color }} />
-            <span className={styles.legendLabel}>{label}</span>
-          </div>
-        ))}
+        {LEGEND.map(({ key, label, color }) => {
+          const on = visibleClasses[key]
+
+          return (
+            <label
+              key={key}
+              className={[styles.legendItem, on ? '' : styles.legendItemOff].filter(Boolean).join(' ')}
+            >
+              <input
+                type="checkbox"
+                className={styles.legendCheckbox}
+                checked={on}
+                onChange={(e) => setVisibleClasses((current) => ({ ...current, [key]: e.target.checked }))}
+                disabled={loading}
+              />
+              <span className={styles.legendDot} style={{ backgroundColor: color }} />
+              <span className={styles.legendLabel}>{label}</span>
+            </label>
+          )
+        })}
       </div>
     </div>
   )

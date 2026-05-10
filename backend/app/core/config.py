@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     allowed_extensions: tuple[str, ...] = (".nii", ".nii.gz", ".zip")
     upload_dir: Path = Path("tmp/uploads")
     results_dir: Path = Path("tmp/results")
+    brats_raw_root: Path = Path("data/raw")
     cleanup_after_hours: int = 24
 
     segmentation_device: str = "auto"
@@ -62,6 +63,7 @@ class Settings(BaseSettings):
         "attention_unet_model_path",
         "upload_dir",
         "results_dir",
+        "brats_raw_root",
         mode="before",
     )
     @classmethod
@@ -117,6 +119,7 @@ def load_yaml_defaults(path: str | Path = APP_CONFIG_PATH) -> dict[str, Any]:
         "allowed_extensions": upload.get("allowed_extensions"),
         "upload_dir": upload.get("upload_dir"),
         "results_dir": upload.get("results_dir"),
+        "brats_raw_root": upload.get("brats_raw_root"),
         "cleanup_after_hours": upload.get("cleanup_after_hours"),
         "default_model_name": models.get("default"),
         "segmentation_device": segmentation.get("device"),

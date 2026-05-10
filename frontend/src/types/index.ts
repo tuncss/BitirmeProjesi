@@ -29,13 +29,39 @@ export interface TumorVolumes {
   ET_cm3: number
 }
 
+export interface ValidationMetrics {
+  dice: number
+  hd95: number
+}
+
+export interface ValidationResult {
+  subject_id: string
+  metrics: {
+    WT: ValidationMetrics
+    TC: ValidationMetrics
+    ET: ValidationMetrics
+  }
+  gt_filename: string
+}
+
+export interface ResultFiles {
+  segmentation: string
+  metadata: string
+  result_dir: string
+  background?: string
+  ground_truth?: string
+}
+
 export interface SegmentationMetadata {
+  task_id?: string
   model_name: string
   processing_time_seconds: number
   tumor_volumes: TumorVolumes
   original_shape: number[]
   segmentation_classes: Record<string, string>
   has_background?: boolean
+  files?: ResultFiles
+  validation?: ValidationResult
 }
 
 export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed'

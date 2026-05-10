@@ -22,11 +22,12 @@ from backend.app.core.exceptions import TaskNotFoundError
 router = APIRouter(tags=["download"])
 
 
-DownloadType = Literal["segmentation", "background"]
+DownloadType = Literal["segmentation", "background", "ground_truth"]
 Disposition = Literal["inline", "attachment"]
 _FILES: dict[DownloadType, str] = {
     "segmentation": "segmentation.nii.gz",
     "background": "background.nii.gz",
+    "ground_truth": "ground_truth.nii.gz",
 }
 
 
