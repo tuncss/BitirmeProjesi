@@ -12,11 +12,13 @@ import numpy as np
 from loguru import logger
 
 from backend.app.core.config import PROJECT_ROOT, Settings, get_settings
+from backend.app.services.brats_lookup import extract_subject_id, resolve_gt_path
 from backend.app.services.file_manager import FileManager
 from backend.app.tasks.celery_app import celery_app
-from src.data.utils import compute_voxel_volume, save_nifti
+from src.data.utils import compute_voxel_volume, load_nifti, save_nifti
 from src.inference.postprocessing import SegmentationPostProcessor
 from src.inference.predictor import BrainTumorPredictor, compute_tumor_volumes
+from src.inference.validation import compute_validation_metrics
 
 
 SEGMENTATION_TASK_NAME = "segmentation.run"
@@ -24,6 +26,7 @@ SEGMENTATION_FILENAME = "segmentation.nii.gz"
 METADATA_FILENAME = "metadata.json"
 FAILURE_FILENAME = "failure.json"
 BACKGROUND_FILENAME = "background.nii.gz"
+GROUND_TRUTH_FILENAME = "ground_truth.nii.gz"
 BACKGROUND_MODALITY = "flair"  # FLAIR best highlights peritumoral edema
 SEGMENTATION_CLASSES = {
     "0": "Background",
@@ -113,6 +116,20 @@ def execute_segmentation(
     segmentation_path = result_dir / SEGMENTATION_FILENAME
     metadata_path = result_dir / METADATA_FILENAME
 
+    _update_progress(
+        task_context,
+        step="validation",
+        progress=90,
+        message="Checking BraTS ground-truth validation data.",
+    )
+    validation = _compute_validation_result(
+        manager=manager,
+        session_id=session_id,
+        cleaned_mask=cleaned_mask,
+        result_dir=result_dir,
+        raw_root=app_settings.brats_raw_root,
+    )
+
     save_nifti(cleaned_mask.astype(np.int16, copy=False), affine, segmentation_path)
 
     background_source = modality_map.get(BACKGROUND_MODALITY)
@@ -132,6 +149,7 @@ def execute_segmentation(
         segmentation_path=segmentation_path,
         crop_bbox=prediction.get("crop_bbox"),
         background_path=background_path,
+        validation=validation,
     )
     with metadata_path.open("w", encoding="utf-8") as file:
         json.dump(metadata, file, indent=2)
@@ -204,6 +222,7 @@ def build_metadata(
     segmentation_path: Path,
     crop_bbox: Any | None = None,
     background_path: Path | None = None,
+    validation: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the JSON metadata written beside the segmentation mask."""
     files: dict[str, str] = {
@@ -224,12 +243,63 @@ def build_metadata(
         "has_background": background_path is not None,
         "files": files,
     }
+    if validation is not None:
+        files["ground_truth"] = validation["gt_filename"]
+        metadata["validation"] = validation
 
     serialized_bbox = serialize_crop_bbox(crop_bbox)
     if serialized_bbox is not None:
         metadata["crop_bbox"] = serialized_bbox
 
     return metadata
+
+
+def _compute_validation_result(
+    *,
+    manager: FileManager,
+    session_id: str,
+    cleaned_mask: np.ndarray,
+    result_dir: Path,
+    raw_root: Path,
+) -> dict[str, Any] | None:
+    """Compute optional BraTS validation metrics without failing inference."""
+    try:
+        original_filenames = manager.get_original_filenames(session_id)
+        subject_id = extract_subject_id(original_filenames)
+        if subject_id is None:
+            return None
+
+        gt_path = resolve_gt_path(subject_id, raw_root)
+        if gt_path is None:
+            return None
+
+        gt_array, gt_affine = load_nifti(gt_path)
+        if tuple(gt_array.shape) != tuple(cleaned_mask.shape):
+            logger.warning(
+                f"Skipping validation for {subject_id} because GT shape "
+                f"{gt_array.shape} does not match prediction shape {cleaned_mask.shape}"
+            )
+            return None
+
+        spacing = compute_voxel_spacing(gt_affine)
+        metrics = compute_validation_metrics(cleaned_mask, gt_array, spacing=spacing)
+        shutil.copyfile(gt_path, result_dir / GROUND_TRUTH_FILENAME)
+        return {
+            "subject_id": subject_id,
+            "metrics": metrics,
+            "gt_filename": GROUND_TRUTH_FILENAME,
+        }
+    except Exception as exc:  # noqa: BLE001 - validation must not fail segmentation
+        logger.warning(f"Skipping validation for session {session_id}: {exc}")
+        return None
+
+
+def compute_voxel_spacing(affine: np.ndarray) -> tuple[float, float, float]:
+    """Compute voxel spacing from a NIfTI affine matrix."""
+    matrix = np.asarray(affine, dtype=float)
+    if matrix.shape[0] < 3 or matrix.shape[1] < 3:
+        raise ValueError(f"Affine must be at least 3x3, got {matrix.shape}")
+    return tuple(float(value) for value in np.linalg.norm(matrix[:3, :3], axis=0))
 
 
 def serialize_crop_bbox(crop_bbox: Any | None) -> dict[str, list[int]] | None:
@@ -290,4 +360,3 @@ def _update_progress(
         meta["error"] = error
 
     task_context.update_state(state=state, meta=meta)
-

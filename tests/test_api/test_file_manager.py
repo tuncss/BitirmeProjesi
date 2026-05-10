@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import time
@@ -15,7 +16,12 @@ import pytest
 
 from backend.app.core.config import Settings
 from backend.app.core.exceptions import InvalidFileFormatError, UploadedFileNotFoundError
-from backend.app.services import FileManager, infer_modality_from_filename, normalized_extension
+from backend.app.services import (
+    FileManager,
+    UPLOAD_MANIFEST_FILENAME,
+    infer_modality_from_filename,
+    normalized_extension,
+)
 
 
 def test_normalized_extension_handles_medical_suffixes() -> None:
@@ -48,6 +54,26 @@ def test_create_session_and_save_file() -> None:
         shutil.rmtree(root, ignore_errors=True)
 
 
+def test_save_file_records_original_modality_filename() -> None:
+    root = _fresh_tmp_dir()
+    try:
+        manager = _manager(root)
+        session_id = manager.create_upload_session()
+
+        manager.save_file(session_id, "BraTS2021_00042_t1.nii.gz", b"content")
+
+        session_dir = manager.get_upload_session_dir(session_id)
+        manifest_path = session_dir / UPLOAD_MANIFEST_FILENAME
+        assert json.loads(manifest_path.read_text(encoding="utf-8")) == {
+            "t1": "BraTS2021_00042_t1.nii.gz"
+        }
+        assert manager.get_original_filenames(session_id) == {
+            "t1": "BraTS2021_00042_t1.nii.gz"
+        }
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
 def test_save_file_rejects_unsupported_extension() -> None:
     root = _fresh_tmp_dir()
     try:
@@ -74,6 +100,10 @@ def test_extract_zip_saves_supported_members_flattened() -> None:
         assert sorted(path.name for path in extracted) == ["case_t1.nii.gz", "case_t2.nii.gz"]
         assert (manager.get_upload_session_dir(session_id) / "case_t2.nii.gz").exists()
         assert not (root / "case_t2.nii.gz").exists()
+        assert manager.get_original_filenames(session_id) == {
+            "t1": "case_t1.nii.gz",
+            "t2": "case_t2.nii.gz",
+        }
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -106,6 +136,25 @@ def test_identify_modalities_maps_required_files() -> None:
 
         assert list(modalities) == ["t1", "t1ce", "t2", "flair"]
         assert modalities["t1ce"].name.endswith("_t1ce.nii.gz")
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def test_get_original_filenames_falls_back_when_manifest_is_missing() -> None:
+    root = _fresh_tmp_dir()
+    try:
+        manager = _manager(root)
+        session_id = manager.create_upload_session()
+        session_dir = manager.get_upload_session_dir(session_id)
+        for modality in ["t1", "t1ce", "t2", "flair"]:
+            (session_dir / f"BraTS2021_00000_{modality}.nii.gz").write_bytes(b"placeholder")
+
+        assert manager.get_original_filenames(session_id) == {
+            "t1": "BraTS2021_00000_t1.nii.gz",
+            "t1ce": "BraTS2021_00000_t1ce.nii.gz",
+            "t2": "BraTS2021_00000_t2.nii.gz",
+            "flair": "BraTS2021_00000_flair.nii.gz",
+        }
     finally:
         shutil.rmtree(root, ignore_errors=True)
 

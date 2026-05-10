@@ -13,6 +13,13 @@ from src.inference.postprocessing import (
     SegmentationPostProcessor,
     validate_brats_mask,
 )
+from src.inference.validation import (
+    VALIDATION_REGIONS,
+    binarize_region,
+    compute_validation_metrics,
+    dice_score,
+    hausdorff95,
+)
 
 __all__ = [
     "BRATS_OUTPUT_LABELS",
@@ -21,7 +28,12 @@ __all__ = [
     "FOREGROUND_LABELS",
     "InferenceMetadata",
     "SegmentationPostProcessor",
+    "VALIDATION_REGIONS",
+    "binarize_region",
     "compute_nonzero_bbox",
     "compute_tumor_volumes",
+    "compute_validation_metrics",
+    "dice_score",
+    "hausdorff95",
     "validate_brats_mask",
 ]

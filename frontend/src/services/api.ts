@@ -12,6 +12,15 @@ const client = axios.create({
   timeout: 300_000, // 5 min — large NIfTI uploads
 })
 
+type ArtifactType = 'segmentation' | 'background' | 'ground_truth'
+type ArtifactMode = 'inline' | 'attachment'
+
+const apiBaseUrl = (): string => (
+  import.meta.env.DEV
+    ? (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000')
+    : ''
+)
+
 // Global error normalizer — surface backend detail messages when available.
 // Backend envelope: { error: { code, message, details }, meta: {...} }
 // FastAPI default validation error envelope: { detail: [...] | "..." }
@@ -86,12 +95,17 @@ export const api = {
    */
   downloadUrl: (
     taskId: string,
-    type: 'segmentation' | 'background' = 'segmentation',
-    mode: 'inline' | 'attachment' = 'inline',
+    type: ArtifactType = 'segmentation',
+    mode: ArtifactMode = 'inline',
   ): string => {
-    const base = import.meta.env.DEV
-      ? (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000')
-      : ''
-    return `${base}/api/download/${taskId}?type=${type}&disposition=${mode}`
+    return `${apiBaseUrl()}/api/download/${taskId}?type=${type}&disposition=${mode}`
+  },
+
+  /**
+   * Returns the inline URL for the optional BraTS ground-truth segmentation.
+   * Callers should only use it when results.validation is present.
+   */
+  getGroundTruthUrl: (taskId: string): string => {
+    return `${apiBaseUrl()}/api/results/${taskId}/files/ground_truth.nii.gz`
   },
 }

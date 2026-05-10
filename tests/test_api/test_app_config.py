@@ -15,6 +15,7 @@ def test_load_yaml_defaults_reads_app_config() -> None:
     assert defaults["host"] == "0.0.0.0"
     assert defaults["port"] == 8000
     assert defaults["max_upload_size_mb"] == 500
+    assert defaults["brats_raw_root"] == "data/raw"
     assert defaults["default_model_name"] == "attention_unet3d"
     assert defaults["unet_model_path"] == "data/models/unet3d_best.pth"
     assert defaults["attention_unet_model_path"] == "data/models/attention_unet3d_best.pth"
@@ -25,6 +26,7 @@ def test_settings_supports_env_style_overrides() -> None:
         app_env="test",
         app_debug=False,
         unet_model_path="model_artifacts/unet.pth",
+        brats_raw_root="data/raw",
         allowed_extensions=".nii,.nii.gz",
         cors_origins="http://example.test,http://localhost:5173",
     )
@@ -32,6 +34,7 @@ def test_settings_supports_env_style_overrides() -> None:
     assert settings.app_env == "test"
     assert settings.app_debug is False
     assert settings.unet_model_path.as_posix() == "model_artifacts/unet.pth"
+    assert settings.brats_raw_root.as_posix() == "data/raw"
     assert settings.allowed_extensions == (".nii", ".nii.gz")
     assert settings.cors_origins == ("http://example.test", "http://localhost:5173")
     assert settings.max_upload_size_bytes == 500 * 1024 * 1024

@@ -176,8 +176,31 @@ def test_download_endpoint_returns_segmentation_file() -> None:
 
         assert response.status_code == 200
         assert response.content == expected
-        assert response.headers["content-type"] == "application/gzip"
-        assert "segmentation_task789.nii.gz" in response.headers["content-disposition"]
+        assert response.headers["content-type"] == "application/octet-stream"
+        assert "content-disposition" not in response.headers
+
+        attachment_response = client.get("/api/download/task789?disposition=attachment")
+        assert attachment_response.status_code == 200
+        assert attachment_response.content == expected
+        assert attachment_response.headers["content-type"] == "application/gzip"
+        assert "segmentation_task789.nii.gz" in attachment_response.headers["content-disposition"]
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def test_download_endpoint_returns_ground_truth_file() -> None:
+    root = _fresh_tmp_dir("test_endpoint_download_gt")
+    try:
+        client = _client(root)
+        result_dir = root / "results" / "task_gt"
+        result_dir.mkdir(parents=True)
+        expected = b"ground-truth-bytes"
+        (result_dir / "ground_truth.nii.gz").write_bytes(expected)
+
+        response = client.get("/api/download/task_gt?type=ground_truth")
+
+        assert response.status_code == 200
+        assert response.content == expected
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -232,4 +255,3 @@ def _fresh_tmp_dir(prefix: str) -> Path:
     shutil.rmtree(root, ignore_errors=True)
     root.mkdir(parents=True, exist_ok=True)
     return root
-

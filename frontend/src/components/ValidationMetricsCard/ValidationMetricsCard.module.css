@@ -1,0 +1,161 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.subject {
+  margin: 0.25rem 0 0;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.helpBtn {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: 0 0 auto;
+  border: 1px solid #334155;
+  border-radius: 50%;
+  background: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: help;
+}
+
+.helpBtn:hover {
+  border-color: #64748b;
+  color: #e2e8f0;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.table th,
+.table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #334155;
+}
+
+.table thead th {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.table tbody tr:last-child th,
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table tbody th {
+  text-align: left;
+}
+
+.regionCode {
+  display: inline-block;
+  min-width: 2rem;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.regionDesc {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.numCell {
+  color: #cbd5e1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+
+.scoreIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.good {
+  color: #009e73;
+}
+
+.good .scoreIcon {
+  background-color: #009e7330;
+  border: 1px solid #009e73;
+}
+
+.warn {
+  color: #e69f00;
+}
+
+.warn .scoreIcon {
+  background-color: #e69f0030;
+  border: 1px solid #e69f00;
+}
+
+.bad {
+  color: #d55e00;
+}
+
+.bad .scoreIcon {
+  background-color: #d55e0030;
+  border: 1px solid #d55e00;
+}
+
+@media (max-width: 560px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .table {
+    min-width: 360px;
+  }
+
+  .regionDesc {
+    display: block;
+    margin-top: 0.15rem;
+  }
+}

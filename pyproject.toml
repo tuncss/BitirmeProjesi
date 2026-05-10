@@ -58,3 +58,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = ["-m", "not slow"]
+markers = [
+    "slow: tests that run large data or end-to-end validation flows",
+]

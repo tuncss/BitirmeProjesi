@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import shutil
 import uuid
 import zipfile
@@ -17,6 +18,7 @@ from backend.app.core.exceptions import InvalidFileFormatError, UploadedFileNotF
 
 
 REQUIRED_MODALITIES = ("t1", "t1ce", "t2", "flair")
+UPLOAD_MANIFEST_FILENAME = "upload_manifest.json"
 
 
 class FileManager:
@@ -60,6 +62,7 @@ class FileManager:
         session_dir = self.get_upload_session_dir(session_id, create=True)
         target = session_dir / safe_name
         target.write_bytes(content)
+        self._record_original_filename(session_dir, safe_name)
         return target
 
     def extract_zip(self, session_id: str, zip_path: str | Path) -> list[Path]:
@@ -83,6 +86,7 @@ class FileManager:
                 target = _safe_join(session_dir, member_name)
                 with archive.open(member) as source, target.open("wb") as destination:
                     shutil.copyfileobj(source, destination)
+                self._record_original_filename(session_dir, member_name)
                 extracted.append(target)
 
         return extracted
@@ -105,6 +109,36 @@ class FileManager:
             raise ValueError(f"Missing modalities: {missing}")
 
         return {modality: modality_map[modality] for modality in REQUIRED_MODALITIES}
+
+    def get_original_filenames(self, session_id: str) -> dict[str, str]:
+        """Return modality-to-original-filename mappings for an upload session.
+
+        New uploads store this in upload_manifest.json. Older sessions without a
+        manifest fall back to the current filenames in the session directory.
+        """
+        session_dir = self.get_upload_session_dir(session_id)
+        manifest = self._read_upload_manifest(session_dir)
+        original_names = {
+            modality: filename
+            for modality, filename in manifest.items()
+            if modality in REQUIRED_MODALITIES and isinstance(filename, str) and filename
+        }
+
+        fallback_names: dict[str, str] = {}
+        for path in sorted(self._iter_supported_files(session_dir)):
+            modality = infer_modality_from_filename(path.name)
+            if modality is not None and modality not in fallback_names:
+                fallback_names[modality] = path.name
+
+        for modality in REQUIRED_MODALITIES:
+            if modality in fallback_names:
+                original_names.setdefault(modality, fallback_names[modality])
+
+        return {
+            modality: original_names[modality]
+            for modality in REQUIRED_MODALITIES
+            if modality in original_names
+        }
 
     def validate_nifti_files(self, modality_map: dict[str, str | Path]) -> bool:
         """Validate modality completeness, NIfTI readability, and shape consistency."""
@@ -175,6 +209,36 @@ class FileManager:
         for path in session_dir.rglob("*"):
             if path.is_file() and normalized_extension(path.name) in {".nii", ".nii.gz"}:
                 yield path
+
+    def _record_original_filename(self, session_dir: Path, filename: str) -> None:
+        modality = infer_modality_from_filename(filename)
+        if modality is None:
+            return
+
+        manifest = self._read_upload_manifest(session_dir)
+        manifest[modality] = Path(filename).name
+        self._write_upload_manifest(session_dir, manifest)
+
+    def _read_upload_manifest(self, session_dir: Path) -> dict[str, str]:
+        manifest_path = session_dir / UPLOAD_MANIFEST_FILENAME
+        if not manifest_path.exists():
+            return {}
+
+        try:
+            with manifest_path.open("r", encoding="utf-8") as file:
+                data = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            logger.warning(f"Ignoring unreadable upload manifest: {manifest_path}")
+            return {}
+
+        if not isinstance(data, dict):
+            return {}
+        return {str(key): str(value) for key, value in data.items() if isinstance(value, str)}
+
+    def _write_upload_manifest(self, session_dir: Path, manifest: dict[str, str]) -> None:
+        manifest_path = session_dir / UPLOAD_MANIFEST_FILENAME
+        with manifest_path.open("w", encoding="utf-8") as file:
+            json.dump(manifest, file, indent=2, sort_keys=True)
 
 
 def infer_modality_from_filename(filename: str) -> str | None:

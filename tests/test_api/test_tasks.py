@@ -16,9 +16,11 @@ from backend.app.core.config import PROJECT_ROOT, Settings
 from backend.app.services import FileManager
 from backend.app.tasks.celery_app import celery_app
 from backend.app.tasks.segmentation_task import (
+    GROUND_TRUTH_FILENAME,
     SEGMENTATION_TASK_NAME,
     _predictors,
     build_metadata,
+    compute_voxel_spacing,
     execute_segmentation,
     get_predictor,
     resolve_device,
@@ -38,7 +40,7 @@ def test_celery_app_uses_redis_settings_and_registers_segmentation_task() -> Non
 def test_runtime_helpers_resolve_paths_and_auto_device() -> None:
     assert resolve_runtime_path("data/models/model.pth") == PROJECT_ROOT / "data/models/model.pth"
     assert resolve_runtime_path(PROJECT_ROOT / "model.pth") == PROJECT_ROOT / "model.pth"
-    assert resolve_device("auto") is None
+    assert resolve_device("auto") in {"cpu", "cuda"}
     assert resolve_device("cpu") == "cpu"
 
 
@@ -131,9 +133,85 @@ def test_execute_segmentation_writes_mask_metadata_and_progress(monkeypatch: pyt
             "preprocessing",
             "inference",
             "postprocessing",
+            "validation",
             "completed",
         ]
         assert task_context.states[-1]["meta"]["progress"] == 100
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def test_execute_segmentation_writes_validation_metadata_and_copies_gt(monkeypatch: pytest.MonkeyPatch) -> None:
+    root = _fresh_tmp_dir("test_task_validation")
+    manager = _manager(root)
+    mask = np.zeros((4, 4, 4), dtype=np.int16)
+    mask[0, 0, 0] = 4
+    mask[0, 0, 1] = 1
+    mask[1, 0, 0] = 2
+    affine = np.diag([2, 1, 1, 1])
+    predictor = FakePredictor(mask=mask, affine=affine)
+
+    monkeypatch.setattr("backend.app.tasks.segmentation_task.get_predictor", lambda model_name, settings=None: predictor)
+
+    try:
+        session_id = _write_upload_session(manager)
+        _write_ground_truth(manager.settings.brats_raw_root, "BraTS2021_00000", mask, affine)
+
+        execute_segmentation(
+            session_id=session_id,
+            model_name="attention_unet3d",
+            task_id="task_validation",
+            settings=manager.settings,
+            file_manager=manager,
+            post_processor=SegmentationPostProcessor(min_component_size=0, fill_holes=False),
+        )
+
+        result_dir = manager.results_dir / "task_validation"
+        metadata = json.loads((result_dir / "metadata.json").read_text(encoding="utf-8"))
+        copied_gt = result_dir / GROUND_TRUTH_FILENAME
+
+        assert copied_gt.exists()
+        assert metadata["files"]["ground_truth"] == GROUND_TRUTH_FILENAME
+        assert metadata["validation"]["subject_id"] == "BraTS2021_00000"
+        assert metadata["validation"]["gt_filename"] == GROUND_TRUTH_FILENAME
+        assert metadata["validation"]["metrics"] == {
+            "WT": {"dice": 1.0, "hd95": 0.0},
+            "TC": {"dice": 1.0, "hd95": 0.0},
+            "ET": {"dice": 1.0, "hd95": 0.0},
+        }
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def test_execute_segmentation_skips_validation_shape_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    root = _fresh_tmp_dir("test_task_validation_shape_mismatch")
+    manager = _manager(root)
+    mask = np.zeros((4, 4, 4), dtype=np.int16)
+    mask[0, 0, 0] = 4
+    predictor = FakePredictor(mask=mask)
+
+    monkeypatch.setattr("backend.app.tasks.segmentation_task.get_predictor", lambda model_name, settings=None: predictor)
+
+    try:
+        session_id = _write_upload_session(manager)
+        mismatched_gt = np.zeros((5, 4, 4), dtype=np.int16)
+        _write_ground_truth(manager.settings.brats_raw_root, "BraTS2021_00000", mismatched_gt, np.eye(4))
+
+        result = execute_segmentation(
+            session_id=session_id,
+            model_name="unet3d",
+            task_id="task_validation_mismatch",
+            settings=manager.settings,
+            file_manager=manager,
+            post_processor=SegmentationPostProcessor(min_component_size=0, fill_holes=False),
+        )
+
+        result_dir = manager.results_dir / "task_validation_mismatch"
+        metadata = json.loads((result_dir / "metadata.json").read_text(encoding="utf-8"))
+
+        assert result["status"] == "completed"
+        assert "validation" not in metadata
+        assert not (result_dir / GROUND_TRUTH_FILENAME).exists()
     finally:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -185,6 +263,34 @@ def test_build_metadata_omits_unknown_bbox_objects() -> None:
     assert metadata["tumor_volumes"] == {"WT_cm3": 1.0, "TC_cm3": 2.0, "ET_cm3": 3.0}
 
 
+def test_build_metadata_includes_validation_when_present() -> None:
+    validation = {
+        "subject_id": "BraTS2021_00000",
+        "metrics": {"WT": {"dice": 1.0, "hd95": 0.0}},
+        "gt_filename": GROUND_TRUTH_FILENAME,
+    }
+
+    metadata = build_metadata(
+        task_id="task789",
+        model_name="unet3d",
+        processing_time_seconds=1.234,
+        tumor_volumes={"WT_cm3": 1, "TC_cm3": 2, "ET_cm3": 3},
+        original_shape=(1, 2, 3),
+        result_dir=Path("results/task789"),
+        segmentation_path=Path("results/task789/segmentation.nii.gz"),
+        validation=validation,
+    )
+
+    assert metadata["validation"] == validation
+    assert metadata["files"]["ground_truth"] == GROUND_TRUTH_FILENAME
+
+
+def test_compute_voxel_spacing_uses_affine_column_norms() -> None:
+    affine = np.diag([2, 3, 4, 1])
+
+    assert compute_voxel_spacing(affine) == (2.0, 3.0, 4.0)
+
+
 class RecordingTaskContext:
     def __init__(self) -> None:
         self.states: list[dict[str, Any]] = []
@@ -225,6 +331,7 @@ def _manager(root: Path) -> FileManager:
             app_env="test",
             upload_dir=root / "uploads",
             results_dir=root / "results",
+            brats_raw_root=root / "raw",
             allowed_extensions=(".nii", ".nii.gz", ".zip"),
             unet_model_path=root / "unet.pth",
             attention_unet_model_path=root / "attention.pth",
@@ -243,6 +350,13 @@ def _write_upload_session(manager: FileManager) -> str:
 def _write_nifti(path: Path) -> None:
     data = np.zeros((4, 4, 4), dtype=np.float32)
     nib.save(nib.Nifti1Image(data, np.eye(4)), str(path))
+
+
+def _write_ground_truth(raw_root: Path, subject_id: str, data: np.ndarray, affine: np.ndarray) -> Path:
+    gt_path = raw_root / "BraTS2021" / subject_id / f"{subject_id}_seg.nii.gz"
+    gt_path.parent.mkdir(parents=True, exist_ok=True)
+    nib.save(nib.Nifti1Image(data.astype(np.int16, copy=False), affine), str(gt_path))
+    return gt_path
 
 
 def _fresh_tmp_dir(prefix: str) -> Path:

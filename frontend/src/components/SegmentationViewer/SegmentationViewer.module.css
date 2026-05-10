@@ -158,6 +158,27 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s;
+}
+
+.legendItemOff {
+  opacity: 0.45;
+}
+
+.legendCheckbox {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin: 0;
+  accent-color: #0ea5e9;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.legendCheckbox:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .legendDot {

@@ -9,6 +9,7 @@ upload:
   allowed_extensions: [".nii", ".nii.gz", ".zip"]
   upload_dir: "tmp/uploads"
   results_dir: "tmp/results"
+  brats_raw_root: "data/raw"
   cleanup_after_hours: 24
 
 models:
