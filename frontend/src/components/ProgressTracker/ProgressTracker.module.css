@@ -1,0 +1,150 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+
+.heading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* ── Steps ─────────────────────────────────────────────────────────────────── */
+
+.steps {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  background-color: #334155;
+  z-index: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.stepIconWrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #0f172a;
+  border: 2px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: border-color 0.25s, background-color 0.25s;
+}
+
+.stepActive .stepIconWrap {
+  border-color: #38bdf8;
+  background-color: #0c2a3f;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.stepCompleted .stepIconWrap {
+  border-color: #22c55e;
+  background-color: #14532d;
+}
+
+.checkmark {
+  color: #86efac;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.stepIcon {
+  font-size: 0.95rem;
+}
+
+.stepLabel {
+  font-size: 0.75rem;
+  color: #475569;
+  text-align: center;
+}
+
+.stepActive .stepLabel {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.stepCompleted .stepLabel {
+  color: #86efac;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); }
+  50%       { box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+}
+
+/* ── Progress bar ──────────────────────────────────────────────────────────── */
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background-color: #0f172a;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.progressDone {
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+}
+
+.progressPct {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #38bdf8;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+/* ── Message / Error ───────────────────────────────────────────────────────── */
+
+.message {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.error {
+  font-size: 0.85rem;
+  color: #f87171;
+  background-color: #450a0a30;
+  border: 1px solid #7f1d1d50;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+}

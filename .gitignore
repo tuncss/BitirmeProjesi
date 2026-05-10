@@ -13,6 +13,8 @@ build/
 .venv/
 venv/
 env/
+node_modules/
+frontend/node_modules/
 
 # Data and models
 data/raw/*
@@ -48,6 +50,8 @@ tmp/*
 !tmp/uploads/
 !tmp/uploads/.gitkeep
 !tmp/results/
+!tmp/results/.gitkeep
+tmp/results/*
 !tmp/results/.gitkeep
 temp/*
 !temp/.gitkeep

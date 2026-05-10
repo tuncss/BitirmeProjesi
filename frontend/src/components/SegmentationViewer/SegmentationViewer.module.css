@@ -1,0 +1,173 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.viewButtons {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.viewBtn {
+  background: none;
+  border: 1px solid #334155;
+  color: #64748b;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.viewBtn:hover:not(:disabled) {
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+.viewBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.viewBtnActive {
+  border-color: #0ea5e9;
+  color: #38bdf8;
+  background-color: #0c2a3f;
+}
+
+/* ── Opacity row ───────────────────────────────────────────────────────────── */
+
+.opacityRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.opacityLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.slider {
+  width: 100px;
+  accent-color: #0ea5e9;
+  cursor: pointer;
+}
+
+.slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.opacityValue {
+  font-size: 0.75rem;
+  color: #38bdf8;
+  min-width: 2.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Canvas ────────────────────────────────────────────────────────────────── */
+
+.canvasWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 0.75;
+  background-color: #0f172a;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Loading / Error overlays ──────────────────────────────────────────────── */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #0f172acc;
+  color: #64748b;
+  font-size: 0.85rem;
+  z-index: 10;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #334155;
+  border-top-color: #38bdf8;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.errorOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: #0f172acc;
+  color: #f87171;
+  font-size: 0.85rem;
+  text-align: center;
+  z-index: 10;
+}
+
+/* ── Legend ────────────────────────────────────────────────────────────────── */
+
+.legend {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid #334155;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legendLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+}
